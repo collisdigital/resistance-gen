@@ -48,4 +48,53 @@ describe('App Component', () => {
     // Check if Clear button is gone
     expect(screen.queryByText('CLEAR WORKOUT')).not.toBeInTheDocument();
   });
+
+  it('restores configuration from local storage', () => {
+    // 1. Generate a workout with specific settings
+    const { unmount } = render(<App />);
+
+    // Select 'Superset' mode
+    const supersetRadio = screen.getByLabelText('Superset');
+    fireEvent.click(supersetRadio);
+
+    // Select 'Agonist' type
+    const supersetTypeSelect = screen.getByDisplayValue('Random'); // Initially Random
+    fireEvent.change(supersetTypeSelect, { target: { value: 'Agonist' } });
+
+    // Change count to 12
+    const countInput = screen.getByDisplayValue('10');
+    fireEvent.change(countInput, { target: { value: '12' } });
+
+    // Select body area
+    const chestCheckbox = screen.getByLabelText('Chest');
+    fireEvent.click(chestCheckbox);
+
+    // Generate
+    fireEvent.click(screen.getByText('GENERATE WORKOUT'));
+
+    // Verify workout is generated
+    expect(screen.getByText('Set 1')).toBeInTheDocument();
+
+    // 2. Unmount (simulate page close)
+    unmount();
+
+    // 3. Render again (simulate page reload)
+    render(<App />);
+
+    // Verify workout is restored
+    expect(screen.getByText('Set 1')).toBeInTheDocument();
+
+    // Verify configuration is restored
+    const supersetRadioRestored = screen.getByLabelText('Superset') as HTMLInputElement;
+    expect(supersetRadioRestored.checked).toBe(true);
+
+    const supersetTypeSelectRestored = screen.getByDisplayValue('Agonist (Same Muscle)') as HTMLSelectElement;
+    expect(supersetTypeSelectRestored).toBeInTheDocument();
+
+    const countInputRestored = screen.getByDisplayValue('12') as HTMLInputElement;
+    expect(countInputRestored).toBeInTheDocument();
+
+    const chestCheckboxRestored = screen.getByLabelText('Chest') as HTMLInputElement;
+    expect(chestCheckboxRestored.checked).toBe(true);
+  });
 });
