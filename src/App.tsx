@@ -32,8 +32,8 @@ export default function App() {
   // Default to true if no workout, false if workout exists (for mobile UX)
   const [isConfigOpen, setIsConfigOpen] = useState(!initialData.workout);
 
-  // Track expanded overrides for sets
-  const [expandedSets, setExpandedSets] = useState<Record<string, boolean>>({});
+  // Track collapse overrides for sets (true = force collapsed, false = force expanded, undefined = default)
+  const [collapsedSets, setCollapsedSets] = useState<Record<string, boolean>>({});
 
   // Track expanded overrides for exercises (for when they are completed but user wants to see details/uncheck)
   const [expandedExercises, setExpandedExercises] = useState<Record<string, boolean>>({});
@@ -98,7 +98,7 @@ export default function App() {
     setWorkout(null);
     setSavedConfig(null);
     setIsConfigOpen(true); // Keep config open when cleared so user can generate new one
-    setExpandedSets({});
+    setCollapsedSets({});
     setExpandedExercises({});
   };
 
@@ -118,7 +118,7 @@ export default function App() {
     setSavedConfig(options);
     // Collapse config panel on mobile after generation
     setIsConfigOpen(false);
-    setExpandedSets({});
+    setCollapsedSets({});
     setExpandedExercises({});
   };
 
@@ -154,11 +154,15 @@ export default function App() {
     }));
   };
 
-  const handleSetExpandToggle = (setId: string) => {
-      setExpandedSets(prev => ({
-          ...prev,
-          [setId]: !prev[setId]
-      }));
+  const handleSetExpandToggle = (setId: string, isSetComplete: boolean) => {
+      setCollapsedSets(prev => {
+          const override = prev[setId];
+          const isCurrentlyCollapsed = override !== undefined ? override : isSetComplete;
+          return {
+              ...prev,
+              [setId]: !isCurrentlyCollapsed
+          };
+      });
   };
 
   const resetAllExercises = () => {
@@ -171,7 +175,7 @@ export default function App() {
           exercises: set.exercises.map(ex => ({ ...ex, isCompleted: false }))
         }));
       });
-      setExpandedSets({});
+      setCollapsedSets({});
       setExpandedExercises({});
     }
   };
@@ -309,9 +313,12 @@ export default function App() {
 
             {workout?.map((set, index) => {
               const isSetComplete = set.exercises.every(ex => ex.isCompleted);
-              const isSetExpanded = expandedSets[set.id];
-              // Collapsed by default if complete, unless overridden
-              const isSetCollapsed = isSetComplete && !isSetExpanded;
+              // Check for manual override:
+              // if collapsedSets[set.id] is true -> force collapsed
+              // if collapsedSets[set.id] is false -> force expanded
+              // if undefined -> use default (isSetComplete)
+              const override = collapsedSets[set.id];
+              const isSetCollapsed = override !== undefined ? override : isSetComplete;
 
               return (
                 <div
@@ -321,10 +328,10 @@ export default function App() {
                 >
                   <div
                     className={`bg-gray-50 px-4 py-2 border-b flex justify-between items-center cursor-pointer ${isSetComplete ? 'hover:bg-green-50' : ''}`}
-                    onClick={() => handleSetExpandToggle(set.id)}
+                    onClick={() => handleSetExpandToggle(set.id, isSetComplete)}
                   >
                     <div className="flex items-center space-x-2">
-                        <span className={`font-bold ${isSetComplete ? 'text-green-700' : 'text-gray-700'}`}>Set {index + 1}</span>
+                        <span className={`font-bold whitespace-nowrap ${isSetComplete ? 'text-green-700' : 'text-gray-700'}`}>Set {index + 1}</span>
                         {isSetCollapsed && (
                             <span className="text-sm text-gray-500 truncate ml-2">
                                 - {set.exercises.map(ex => ex.name).join(', ')}
