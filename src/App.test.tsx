@@ -1,11 +1,15 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import App from './App';
+
+// Mock scrollIntoView since it's not available in jsdom
+Element.prototype.scrollIntoView = vi.fn();
 
 describe('App Component', () => {
   beforeEach(() => {
     // Clear localStorage before each test
     localStorage.clear();
+    vi.clearAllMocks();
   });
 
   it('renders correctly', () => {
@@ -96,5 +100,82 @@ describe('App Component', () => {
 
     const chestCheckboxRestored = screen.getByLabelText('Chest');
     expect((chestCheckboxRestored as HTMLInputElement).checked).toBe(true);
+  });
+
+  it('handles exercise completion and persistence', () => {
+      const { unmount } = render(<App />);
+
+      // Generate workout
+      fireEvent.click(screen.getByLabelText('Chest'));
+      fireEvent.click(screen.getByText('GENERATE WORKOUT'));
+
+      // Find first 'Complete' button
+      const completeBtns = screen.getAllByText('Complete');
+      const firstCompleteBtn = completeBtns[0];
+
+      // Click complete
+      fireEvent.click(firstCompleteBtn);
+
+      // Verify it changes to 'Uncheck' (which implies it's now completed)
+      // Note: In our logic, if it's completed, it collapses. To see 'Uncheck', we must expand it or it must be expanded.
+      // But we just clicked it. If logic says collapsed on complete, the button might disappear until expanded.
+      // Let's check if checkmark appears in the header (which is always visible)
+      // The header has a checkmark if completed? No, the header of exercise has checkmark if completed.
+      // "✓" text is present when completed.
+      expect(screen.getByText('✓')).toBeInTheDocument();
+
+      // Verify persistence
+      unmount();
+      render(<App />);
+
+      // Should still have checkmark
+      expect(screen.getByText('✓')).toBeInTheDocument();
+  });
+
+  it('collapses set when all exercises are complete', () => {
+    render(<App />);
+
+    // Generate workout with 1 exercise count to ensure 1 set = 1 exercise (Regular mode)
+    fireEvent.click(screen.getByLabelText('Chest'));
+    const countInput = screen.getByDisplayValue('10');
+    fireEvent.change(countInput, { target: { value: '1' } });
+    fireEvent.click(screen.getByText('GENERATE WORKOUT'));
+
+    // Click complete on the only exercise
+    const completeBtn = screen.getByText('Complete');
+    fireEvent.click(completeBtn);
+
+    // Now the set should be complete.
+    // Set header should have checkmark.
+    // Since there's only one checkmark (exercise) and one set checkmark, let's look for multiple or specific context.
+    // The set header has a green checkmark when complete.
+    // We can query by the green checkmark text or class.
+
+    // Check for set completion indicator (Set 1 text becomes green)
+    const setHeader = screen.getByText('Set 1');
+    expect(setHeader).toHaveClass('text-green-700');
+  });
+
+  it('resets all exercises', () => {
+     // Mock window.confirm
+     window.confirm = vi.fn(() => true);
+
+     render(<App />);
+
+     fireEvent.click(screen.getByLabelText('Chest'));
+     fireEvent.click(screen.getByText('GENERATE WORKOUT'));
+
+     // Mark complete
+     const completeBtn = screen.getAllByText('Complete')[0];
+     fireEvent.click(completeBtn);
+     expect(screen.queryByText('✓')).toBeInTheDocument();
+
+     // Click Reset
+     const resetLink = screen.getByText('Mark all exercises incomplete');
+     fireEvent.click(resetLink);
+
+     // Checkmark should be gone
+     expect(screen.queryByText('✓')).not.toBeInTheDocument();
+     expect(window.confirm).toHaveBeenCalled();
   });
 });

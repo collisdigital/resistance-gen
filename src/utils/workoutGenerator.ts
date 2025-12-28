@@ -8,9 +8,13 @@ export interface WorkoutOptions {
   count: number;
 }
 
+export interface WorkoutExercise extends Exercise {
+  isCompleted: boolean;
+}
+
 export interface WorkoutSet {
   id: string;
-  exercises: Exercise[];
+  exercises: WorkoutExercise[];
   type: 'Regular' | 'Superset';
 }
 
@@ -96,7 +100,10 @@ export const generateWorkout = (options: WorkoutOptions): WorkoutSet[] => {
        if (second) {
          workout.push({
            id: `set-${Date.now()}-${exercisesAdded}`,
-           exercises: [first, second],
+           exercises: [
+             { ...first, isCompleted: false },
+             { ...second, isCompleted: false }
+           ],
            type: 'Superset'
          });
          exercisesAdded += 2;
@@ -105,7 +112,7 @@ export const generateWorkout = (options: WorkoutOptions): WorkoutSet[] => {
          // Let's add as regular for now to fill the quota
          workout.push({
            id: `set-${Date.now()}-${exercisesAdded}`,
-           exercises: [first],
+           exercises: [{ ...first, isCompleted: false }],
            type: 'Regular' // Fallback
          });
          exercisesAdded += 1;
@@ -114,7 +121,7 @@ export const generateWorkout = (options: WorkoutOptions): WorkoutSet[] => {
       // Regular mode or last odd exercise
       workout.push({
         id: `set-${Date.now()}-${exercisesAdded}`,
-        exercises: [first],
+        exercises: [{ ...first, isCompleted: false }],
         type: 'Regular'
       });
       exercisesAdded += 1;

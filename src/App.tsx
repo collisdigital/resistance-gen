@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { BodyArea } from './data/exercises';
 import { generateWorkout } from './utils/workoutGenerator';
 import type { WorkoutOptions, WorkoutSet } from './utils/workoutGenerator';
@@ -32,6 +32,15 @@ export default function App() {
   // Default to true if no workout, false if workout exists (for mobile UX)
   const [isConfigOpen, setIsConfigOpen] = useState(!initialData.workout);
 
+  // Track expanded overrides for sets
+  const [expandedSets, setExpandedSets] = useState<Record<string, boolean>>({});
+
+  // Track expanded overrides for exercises (for when they are completed but user wants to see details/uncheck)
+  const [expandedExercises, setExpandedExercises] = useState<Record<string, boolean>>({});
+
+  // Refs for sets to handle scrolling
+  const setRefs = useRef<(HTMLDivElement | null)[]>([]);
+
   // Save to local storage whenever workout changes
   useEffect(() => {
     if (workout && savedConfig) {
@@ -45,6 +54,40 @@ export default function App() {
     }
   }, [workout, savedConfig]);
 
+  // Effect to handle auto-scrolling
+  // We need to track previous completion state to know when a set *becomes* complete
+  const prevCompletedSetsRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!workout) {
+      prevCompletedSetsRef.current = new Set();
+      return;
+    }
+
+    const currentCompletedSets = new Set<string>();
+    workout.forEach((set, index) => {
+      const isSetComplete = set.exercises.every(ex => ex.isCompleted);
+      if (isSetComplete) {
+        currentCompletedSets.add(set.id);
+
+        // Check if it WAS NOT complete before
+        if (!prevCompletedSetsRef.current.has(set.id)) {
+           // It just became complete. Scroll to next set if exists.
+           const nextIndex = index + 1;
+           if (nextIndex < workout.length) {
+             const nextElement = setRefs.current[nextIndex];
+             if (nextElement) {
+               nextElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+             }
+           }
+        }
+      }
+    });
+
+    prevCompletedSetsRef.current = currentCompletedSets;
+  }, [workout]);
+
+
   const toggleBodyArea = (area: BodyArea) => {
     setSelectedBodyAreas(prev =>
       prev.includes(area) ? prev.filter(a => a !== area) : [...prev, area]
@@ -55,6 +98,8 @@ export default function App() {
     setWorkout(null);
     setSavedConfig(null);
     setIsConfigOpen(true); // Keep config open when cleared so user can generate new one
+    setExpandedSets({});
+    setExpandedExercises({});
   };
 
   const handleGenerate = () => {
@@ -73,7 +118,64 @@ export default function App() {
     setSavedConfig(options);
     // Collapse config panel on mobile after generation
     setIsConfigOpen(false);
+    setExpandedSets({});
+    setExpandedExercises({});
   };
+
+  const toggleExerciseCompletion = (setId: string, exerciseId: string) => {
+    if (!workout) return;
+
+    setWorkout(prevWorkout => {
+      if (!prevWorkout) return null;
+      return prevWorkout.map(set => {
+        if (set.id !== setId) return set;
+        return {
+          ...set,
+          exercises: set.exercises.map(ex => {
+            if (ex.id !== exerciseId) return ex;
+            const newCompleted = !ex.isCompleted;
+
+            // If we are marking as incomplete, ensure it stays expanded if it was
+            // (Though typically UI logic handles view state)
+            return { ...ex, isCompleted: newCompleted };
+          })
+        };
+      });
+    });
+  };
+
+  const handleExerciseExpandToggle = (exerciseId: string) => {
+    // If it's completed, toggle expansion.
+    // If it's not completed, it's always expanded by default, so maybe this is just for collapsing?
+    // User requirement: "Require expanding to uncheck".
+    setExpandedExercises(prev => ({
+      ...prev,
+      [exerciseId]: !prev[exerciseId]
+    }));
+  };
+
+  const handleSetExpandToggle = (setId: string) => {
+      setExpandedSets(prev => ({
+          ...prev,
+          [setId]: !prev[setId]
+      }));
+  };
+
+  const resetAllExercises = () => {
+    if (!workout) return;
+    if (window.confirm("Are you sure you want to mark all exercises as incomplete?")) {
+      setWorkout(prevWorkout => {
+        if (!prevWorkout) return null;
+        return prevWorkout.map(set => ({
+          ...set,
+          exercises: set.exercises.map(ex => ({ ...ex, isCompleted: false }))
+        }));
+      });
+      setExpandedSets({});
+      setExpandedExercises({});
+    }
+  };
+
 
   const areas: BodyArea[] = ['Chest', 'Back', 'Legs', 'Shoulders', 'Arms', 'Abs'];
 
@@ -205,40 +307,115 @@ export default function App() {
                </div>
             )}
 
-            {workout?.map((set, index) => (
-              <div key={set.id} className="bg-white rounded-lg shadow-md overflow-hidden border-l-4 border-red-600">
-                <div className="bg-gray-50 px-4 py-2 border-b flex justify-between items-center">
-                  <span className="font-bold text-gray-700">Set {index + 1}</span>
-                  <span className="text-xs uppercase tracking-wide font-semibold text-gray-500 bg-gray-200 px-2 py-1 rounded">
-                    {set.type}
-                  </span>
-                </div>
-                <div className="divide-y divide-gray-100">
-                  {set.exercises.map((exercise) => (
-                    <div key={exercise.id} className="p-4">
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="text-lg font-bold text-gray-900">{exercise.name}</h3>
-                        <span className="text-xs font-semibold text-white bg-gray-800 px-2 py-1 rounded">
-                          {exercise.targetMuscle}
-                        </span>
-                      </div>
-                      <p className="text-gray-600 text-sm mb-3">{exercise.description}</p>
+            {workout?.map((set, index) => {
+              const isSetComplete = set.exercises.every(ex => ex.isCompleted);
+              const isSetExpanded = expandedSets[set.id];
+              // Collapsed by default if complete, unless overridden
+              const isSetCollapsed = isSetComplete && !isSetExpanded;
 
-                      <details className="group">
-                        <summary className="text-sm font-medium text-red-600 cursor-pointer hover:text-red-800 select-none">
-                          Show Tips
-                        </summary>
-                        <ul className="mt-2 text-sm text-gray-500 list-disc list-inside space-y-1 pl-2">
-                          {exercise.tips.map((tip, i) => (
-                            <li key={i}>{tip}</li>
-                          ))}
-                        </ul>
-                      </details>
+              return (
+                <div
+                  key={set.id}
+                  ref={(el) => { setRefs.current[index] = el; }}
+                  className={`bg-white rounded-lg shadow-md overflow-hidden border-l-4 ${isSetComplete ? 'border-green-500' : 'border-red-600'}`}
+                >
+                  <div
+                    className={`bg-gray-50 px-4 py-2 border-b flex justify-between items-center cursor-pointer ${isSetComplete ? 'hover:bg-green-50' : ''}`}
+                    onClick={() => handleSetExpandToggle(set.id)}
+                  >
+                    <div className="flex items-center space-x-2">
+                        <span className={`font-bold ${isSetComplete ? 'text-green-700' : 'text-gray-700'}`}>Set {index + 1}</span>
+                        {isSetCollapsed && (
+                            <span className="text-sm text-gray-500 truncate ml-2">
+                                - {set.exercises.map(ex => ex.name).join(', ')}
+                            </span>
+                        )}
                     </div>
-                  ))}
+
+                    <div className="flex items-center space-x-2">
+                        <span className="text-xs uppercase tracking-wide font-semibold text-gray-500 bg-gray-200 px-2 py-1 rounded">
+                            {set.type}
+                        </span>
+                        {isSetComplete && (
+                            <span className="text-green-600 font-bold text-lg">✓</span>
+                        )}
+                    </div>
+                  </div>
+
+                  {!isSetCollapsed && (
+                    <div className="divide-y divide-gray-100">
+                      {set.exercises.map((exercise) => {
+                        const isExExpanded = expandedExercises[exercise.id];
+                        // If complete, default to collapsed unless expanded
+                        const isExCollapsed = exercise.isCompleted && !isExExpanded;
+
+                        return (
+                            <div key={exercise.id} className={`p-4 transition-all ${exercise.isCompleted ? 'bg-green-50/30' : ''}`}>
+                            <div className="flex justify-between items-start mb-2">
+                                <div
+                                    className={`flex-1 cursor-pointer ${exercise.isCompleted ? 'opacity-60' : ''}`}
+                                    onClick={() => handleExerciseExpandToggle(exercise.id)}
+                                >
+                                    <div className="flex items-center space-x-2">
+                                        {exercise.isCompleted && (
+                                            <span className="text-green-600 font-bold">✓</span>
+                                        )}
+                                        <h3 className="text-lg font-bold text-gray-900">{exercise.name}</h3>
+                                        <span className="text-xs font-semibold text-white bg-gray-800 px-2 py-1 rounded ml-2">
+                                            {exercise.targetMuscle}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {(!exercise.isCompleted || isExExpanded) && (
+                                    <button
+                                        onClick={() => toggleExerciseCompletion(set.id, exercise.id)}
+                                        className={`ml-4 px-3 py-1 text-sm font-bold rounded border focus:outline-none focus:ring-2 focus:ring-offset-1 transition-colors ${
+                                            exercise.isCompleted
+                                            ? 'text-gray-500 border-gray-300 hover:bg-gray-100 focus:ring-gray-400'
+                                            : 'text-green-600 border-green-600 hover:bg-green-50 focus:ring-green-500'
+                                        }`}
+                                    >
+                                        {exercise.isCompleted ? 'Uncheck' : 'Complete'}
+                                    </button>
+                                )}
+                            </div>
+
+                            {!isExCollapsed && (
+                                <>
+                                    <p className={`text-gray-600 text-sm mb-3 ${exercise.isCompleted ? 'opacity-60' : ''}`}>{exercise.description}</p>
+
+                                    <details className="group">
+                                        <summary className="text-sm font-medium text-red-600 cursor-pointer hover:text-red-800 select-none">
+                                        Show Tips
+                                        </summary>
+                                        <ul className="mt-2 text-sm text-gray-500 list-disc list-inside space-y-1 pl-2">
+                                        {exercise.tips.map((tip, i) => (
+                                            <li key={i}>{tip}</li>
+                                        ))}
+                                        </ul>
+                                    </details>
+                                </>
+                            )}
+                            </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
+
+            {workout && workout.length > 0 && (
+                <div className="mt-8 flex justify-center">
+                    <button
+                        onClick={resetAllExercises}
+                        className="text-gray-500 hover:text-red-600 underline font-medium text-sm transition-colors"
+                    >
+                        Mark all exercises incomplete
+                    </button>
+                </div>
+            )}
           </div>
         </div>
       </div>
