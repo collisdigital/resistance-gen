@@ -142,7 +142,7 @@ export default function WorkoutPage() {
             </button>
 
             <button
-              onClick={() => navigate('/exercises')}
+              onClick={() => void navigate('/exercises')}
               className="w-full bg-gray-800 text-white py-2 px-4 rounded-md hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-700 font-bold transition-colors mb-3"
             >
               BROWSE EXERCISES

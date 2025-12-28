@@ -25,7 +25,7 @@ export default function ExerciseListPage() {
       <div className="max-w-4xl mx-auto">
         <header className="mb-6 flex items-center justify-between">
             <button
-                onClick={() => navigate('/')}
+                onClick={() => void navigate('/')}
                 className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center"
             >
                 ← Back to Workout
