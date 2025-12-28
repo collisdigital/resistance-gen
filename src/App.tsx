@@ -15,13 +15,17 @@ export default function App() {
     const saved = localStorage.getItem('lastWorkout');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        return JSON.parse(saved) as WorkoutSet[];
       } catch (e) {
         console.error("Failed to load workout", e);
       }
     }
     return null;
   });
+
+  // State for mobile config panel visibility
+  // Default to true if no workout, false if workout exists (for mobile UX)
+  const [isConfigOpen, setIsConfigOpen] = useState(!workout);
 
   // Save to local storage whenever workout changes
   useEffect(() => {
@@ -49,6 +53,8 @@ export default function App() {
     };
     const newWorkout = generateWorkout(options);
     setWorkout(newWorkout);
+    // Collapse config panel on mobile after generation
+    setIsConfigOpen(false);
   };
 
   const areas: BodyArea[] = ['Chest', 'Back', 'Legs', 'Shoulders', 'Arms', 'Abs'];
@@ -62,8 +68,19 @@ export default function App() {
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Mobile Toggle Button */}
+          <div className="md:hidden mb-4">
+             <button
+               onClick={() => setIsConfigOpen(!isConfigOpen)}
+               className="w-full bg-white p-3 rounded-lg shadow flex justify-between items-center text-gray-700 font-bold"
+             >
+               <span>{isConfigOpen ? 'Hide Configuration' : 'Show Configuration'}</span>
+               <span className="text-xl">{isConfigOpen ? '−' : '+'}</span>
+             </button>
+          </div>
+
           {/* Configuration Panel */}
-          <div className="md:col-span-1 bg-white p-6 rounded-lg shadow-md h-fit">
+          <div className={`md:col-span-1 bg-white p-6 rounded-lg shadow-md h-fit ${isConfigOpen ? 'block' : 'hidden md:block'}`}>
             <h2 className="text-xl font-bold mb-4 border-b pb-2">Configuration</h2>
 
             <div className="mb-6">
@@ -154,13 +171,13 @@ export default function App() {
                </div>
             )}
 
-            {workout && workout.length === 0 && (
+            {workout?.length === 0 && (
                <div className="bg-white p-8 rounded-lg shadow-md text-center text-gray-500">
                  No exercises found for the selected criteria. Try selecting more body areas.
                </div>
             )}
 
-            {workout && workout.map((set, index) => (
+            {workout?.map((set, index) => (
               <div key={set.id} className="bg-white rounded-lg shadow-md overflow-hidden border-l-4 border-red-600">
                 <div className="bg-gray-50 px-4 py-2 border-b flex justify-between items-center">
                   <span className="font-bold text-gray-700">Set {index + 1}</span>
