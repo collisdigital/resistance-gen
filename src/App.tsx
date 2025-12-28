@@ -31,6 +31,8 @@ export default function App() {
   useEffect(() => {
     if (workout) {
       localStorage.setItem('lastWorkout', JSON.stringify(workout));
+    } else {
+      localStorage.removeItem('lastWorkout');
     }
   }, [workout]);
 
@@ -38,6 +40,11 @@ export default function App() {
     setSelectedBodyAreas(prev =>
       prev.includes(area) ? prev.filter(a => a !== area) : [...prev, area]
     );
+  };
+
+  const handleClear = () => {
+    setWorkout(null);
+    setIsConfigOpen(true); // Keep config open when cleared so user can generate new one
   };
 
   const handleGenerate = () => {
@@ -157,10 +164,19 @@ export default function App() {
 
             <button
               onClick={handleGenerate}
-              className="w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 font-bold transition-colors"
+              className="w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 font-bold transition-colors mb-3"
             >
               GENERATE WORKOUT
             </button>
+
+            {workout && (
+              <button
+                onClick={handleClear}
+                className="w-full bg-white text-red-600 border border-red-600 py-2 px-4 rounded-md hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 font-bold transition-colors"
+              >
+                CLEAR WORKOUT
+              </button>
+            )}
           </div>
 
           {/* Workout Display */}
