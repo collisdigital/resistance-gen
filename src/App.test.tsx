@@ -85,16 +85,16 @@ describe('App Component', () => {
     expect(screen.getByText('Set 1')).toBeInTheDocument();
 
     // Verify configuration is restored
-    const supersetRadioRestored = screen.getByLabelText('Superset') as HTMLInputElement;
-    expect(supersetRadioRestored.checked).toBe(true);
+    const supersetRadioRestored = screen.getByLabelText('Superset');
+    expect((supersetRadioRestored as HTMLInputElement).checked).toBe(true);
 
-    const supersetTypeSelectRestored = screen.getByDisplayValue('Agonist (Same Muscle)') as HTMLSelectElement;
+    const supersetTypeSelectRestored = screen.getByDisplayValue('Agonist (Same Muscle)');
     expect(supersetTypeSelectRestored).toBeInTheDocument();
 
-    const countInputRestored = screen.getByDisplayValue('12') as HTMLInputElement;
+    const countInputRestored = screen.getByDisplayValue('12');
     expect(countInputRestored).toBeInTheDocument();
 
-    const chestCheckboxRestored = screen.getByLabelText('Chest') as HTMLInputElement;
-    expect(chestCheckboxRestored.checked).toBe(true);
+    const chestCheckboxRestored = screen.getByLabelText('Chest');
+    expect((chestCheckboxRestored as HTMLInputElement).checked).toBe(true);
   });
 });
