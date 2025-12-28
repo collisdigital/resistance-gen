@@ -2,39 +2,48 @@ import { useState, useEffect } from 'react';
 import type { BodyArea } from './data/exercises';
 import { generateWorkout } from './utils/workoutGenerator';
 import type { WorkoutOptions, WorkoutSet } from './utils/workoutGenerator';
+import { loadWorkoutFromStorage } from './utils/storage';
 
 export default function App() {
-  // State for configuration
-  const [selectedBodyAreas, setSelectedBodyAreas] = useState<BodyArea[]>([]);
-  const [mode, setMode] = useState<'Regular' | 'Superset'>('Regular');
-  const [supersetType, setSupersetType] = useState<'Agonist' | 'Antagonist' | 'Random'>('Random');
-  const [count, setCount] = useState<number>(10);
+  // Load initial data from storage once
+  const [initialData] = useState(() => loadWorkoutFromStorage());
+
+  // State for configuration - initialize with loaded config if available
+  const [selectedBodyAreas, setSelectedBodyAreas] = useState<BodyArea[]>(
+    initialData.config?.bodyAreas || []
+  );
+  const [mode, setMode] = useState<'Regular' | 'Superset'>(
+    initialData.config?.mode || 'Regular'
+  );
+  const [supersetType, setSupersetType] = useState<'Agonist' | 'Antagonist' | 'Random'>(
+    initialData.config?.supersetType || 'Random'
+  );
+  const [count, setCount] = useState<number>(
+    initialData.config?.count || 10
+  );
 
   // State for generated workout
-  const [workout, setWorkout] = useState<WorkoutSet[] | null>(() => {
-    const saved = localStorage.getItem('lastWorkout');
-    if (saved) {
-      try {
-        return JSON.parse(saved) as WorkoutSet[];
-      } catch (e) {
-        console.error("Failed to load workout", e);
-      }
-    }
-    return null;
-  });
+  const [workout, setWorkout] = useState<WorkoutSet[] | null>(initialData.workout);
+
+  // State to track the config associated with the current workout (for saving)
+  const [savedConfig, setSavedConfig] = useState<WorkoutOptions | null>(initialData.config);
 
   // State for mobile config panel visibility
   // Default to true if no workout, false if workout exists (for mobile UX)
-  const [isConfigOpen, setIsConfigOpen] = useState(!workout);
+  const [isConfigOpen, setIsConfigOpen] = useState(!initialData.workout);
 
   // Save to local storage whenever workout changes
   useEffect(() => {
-    if (workout) {
-      localStorage.setItem('lastWorkout', JSON.stringify(workout));
-    } else {
+    if (workout && savedConfig) {
+      const data = {
+        workout,
+        config: savedConfig
+      };
+      localStorage.setItem('lastWorkout', JSON.stringify(data));
+    } else if (!workout) {
       localStorage.removeItem('lastWorkout');
     }
-  }, [workout]);
+  }, [workout, savedConfig]);
 
   const toggleBodyArea = (area: BodyArea) => {
     setSelectedBodyAreas(prev =>
@@ -44,6 +53,7 @@ export default function App() {
 
   const handleClear = () => {
     setWorkout(null);
+    setSavedConfig(null);
     setIsConfigOpen(true); // Keep config open when cleared so user can generate new one
   };
 
@@ -60,6 +70,7 @@ export default function App() {
     };
     const newWorkout = generateWorkout(options);
     setWorkout(newWorkout);
+    setSavedConfig(options);
     // Collapse config panel on mobile after generation
     setIsConfigOpen(false);
   };
@@ -100,6 +111,7 @@ export default function App() {
                       className="rounded text-red-600 focus:ring-red-500"
                       checked={selectedBodyAreas.includes(area)}
                       onChange={() => toggleBodyArea(area)}
+                      aria-label={area}
                     />
                     <span>{area}</span>
                   </label>
