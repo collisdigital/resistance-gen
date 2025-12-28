@@ -72,13 +72,12 @@ export default function App() {
 
         // Check if it WAS NOT complete before
         if (!prevCompletedSetsRef.current.has(set.id)) {
-           // It just became complete. Scroll to next set if exists.
-           const nextIndex = index + 1;
-           if (nextIndex < workout.length) {
-             const nextElement = setRefs.current[nextIndex];
-             if (nextElement) {
-               nextElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-             }
+           // It just became complete.
+           // Scroll the COMPLETED set to the top of the view.
+           // This keeps it visible (as a collapsed item) while showing the next set right below it.
+           const element = setRefs.current[index];
+           if (element) {
+             element.scrollIntoView({ behavior: 'smooth', block: 'start' });
            }
         }
       }
