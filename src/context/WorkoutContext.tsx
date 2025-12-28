@@ -1,9 +1,9 @@
-import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import type { ReactNode } from 'react';
 import type { BodyArea } from '../data/exercises';
 import { generateWorkout } from '../utils/workoutGenerator';
 import type { WorkoutOptions, WorkoutSet } from '../utils/workoutGenerator';
 import { loadWorkoutFromStorage } from '../utils/storage';
-import { exercises as allExercises } from '../data/exercises';
 import type { Exercise } from '../data/exercises';
 
 interface WorkoutContextType {
