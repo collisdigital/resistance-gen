@@ -1,4 +1,4 @@
-import { WorkoutSet, WorkoutOptions } from './workoutGenerator';
+import type { WorkoutSet, WorkoutOptions } from './workoutGenerator';
 
 export interface StorageData {
   workout: WorkoutSet[];
