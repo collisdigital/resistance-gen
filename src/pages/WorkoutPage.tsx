@@ -184,14 +184,14 @@ export default function WorkoutPage() {
                   className={`bg-white rounded-lg shadow-md overflow-hidden border-l-4 ${isSetComplete ? 'border-green-500' : 'border-red-600'}`}
                 >
                   <div
-                    className={`bg-gray-50 px-4 py-2 border-b flex justify-between items-center cursor-pointer ${isSetComplete ? 'hover:bg-green-50' : ''}`}
+                    className={`bg-gray-50 px-4 py-2  flex justify-between items-center cursor-pointer ${isSetComplete ? 'hover:bg-green-50' : ''}`}
                     onClick={() => handleSetExpandToggle(set.id, isSetComplete)}
                   >
                     <div className="flex items-center space-x-2">
                         <span className={`font-bold whitespace-nowrap ${isSetComplete ? 'text-green-700' : 'text-gray-700'}`}>Set {index + 1}</span>
                         {isSetCollapsed && (
                             <span className="text-sm text-gray-500 truncate ml-2">
-                                - {set.exercises.map(ex => ex.name).join(', ')}
+                                {set.exercises.map(ex => ex.name).join(', ')}
                             </span>
                         )}
                     </div>

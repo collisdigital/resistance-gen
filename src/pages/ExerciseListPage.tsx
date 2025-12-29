@@ -114,7 +114,7 @@ export default function ExerciseListPage() {
 
                         {isExpanded && (
                             <div className="mt-4 pt-4 border-t border-gray-100 animate-fade-in">
-                                <h4 className="font-bold text-red-600 mb-2 text-sm uppercase tracking-wide">Jeff's Tips</h4>
+                                <h4 className="font-bold text-red-600 mb-2 text-sm uppercase tracking-wide">Tips</h4>
                                 <ul className="list-disc list-inside text-sm text-gray-600 space-y-1 pl-2">
                                     {exercise.tips.map((tip, i) => (
                                         <li key={i}>{tip}</li>
