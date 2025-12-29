@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import React, { createContext, useState, useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
 import type { BodyArea } from '../data/exercises';
 import { generateWorkout } from '../utils/workoutGenerator';
@@ -240,10 +240,4 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useWorkout() {
-  const context = useContext(WorkoutContext);
-  if (context === undefined) {
-    throw new Error('useWorkout must be used within a WorkoutProvider');
-  }
-  return context;
-}
+export { WorkoutContext };

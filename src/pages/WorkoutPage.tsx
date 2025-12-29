@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import type { BodyArea } from '../data/exercises';
-import { useWorkout } from '../context/WorkoutContext';
+import { useWorkout } from '../hooks/useWorkout';
 
 export default function WorkoutPage() {
   const navigate = useNavigate();

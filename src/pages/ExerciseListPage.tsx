@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { exercises } from '../data/exercises';
 import type { BodyArea } from '../data/exercises';
-import { useWorkout } from '../context/WorkoutContext';
+import { useWorkout } from '../hooks/useWorkout';
 
 export default function ExerciseListPage() {
   const navigate = useNavigate();
