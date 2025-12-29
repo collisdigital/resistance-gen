@@ -9,6 +9,7 @@ export default function ExerciseListPage() {
   const { addExerciseToWorkout, isExerciseInWorkout } = useWorkout();
 
   const [selectedBodyArea, setSelectedBodyArea] = useState<BodyArea | 'All'>('All');
+  const [expandedExercises, setExpandedExercises] = useState<Record<string, boolean>>({});
 
   const areas: BodyArea[] = ['Chest', 'Back', 'Legs', 'Shoulders', 'Arms', 'Abs', 'Corrective'];
 
@@ -16,8 +17,16 @@ export default function ExerciseListPage() {
     selectedBodyArea === 'All' || ex.targetMuscle === selectedBodyArea
   );
 
-  const handleAddToWorkout = (exercise: typeof exercises[0]) => {
+  const handleAddToWorkout = (e: React.MouseEvent, exercise: typeof exercises[0]) => {
+    e.stopPropagation();
     addExerciseToWorkout(exercise);
+  };
+
+  const toggleExpand = (id: string) => {
+    setExpandedExercises(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
   };
 
   return (
@@ -67,34 +76,52 @@ export default function ExerciseListPage() {
         <div className="grid gap-4">
             {filteredExercises.map(exercise => {
                 const isInWorkout = isExerciseInWorkout(exercise.id);
+                const isExpanded = expandedExercises[exercise.id];
 
                 return (
-                    <div key={exercise.id} className="bg-white p-4 rounded-lg shadow flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                                <h3 className="text-lg font-bold text-gray-900">{exercise.name}</h3>
-                                <span className="text-xs font-semibold text-white bg-gray-800 px-2 py-0.5 rounded">
-                                    {exercise.targetMuscle}
-                                </span>
-                                {isInWorkout && (
-                                    <span className="text-xs font-bold text-white bg-green-500 px-2 py-0.5 rounded ml-2">
-                                        ADDED
+                    <div
+                        key={exercise.id}
+                        onClick={() => toggleExpand(exercise.id)}
+                        className="bg-white p-4 rounded-lg shadow cursor-pointer hover:shadow-md transition-shadow"
+                    >
+                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                            <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <h3 className="text-lg font-bold text-gray-900">{exercise.name}</h3>
+                                    <span className="text-xs font-semibold text-white bg-gray-800 px-2 py-0.5 rounded">
+                                        {exercise.targetMuscle}
                                     </span>
-                                )}
+                                    {isInWorkout && (
+                                        <span className="text-xs font-bold text-white bg-green-500 px-2 py-0.5 rounded ml-2">
+                                            ADDED
+                                        </span>
+                                    )}
+                                </div>
+                                <p className={`text-gray-600 text-sm ${isExpanded ? '' : 'line-clamp-2'}`}>{exercise.description}</p>
                             </div>
-                            <p className="text-gray-600 text-sm line-clamp-2">{exercise.description}</p>
+
+                            <button
+                                onClick={(e) => handleAddToWorkout(e, exercise)}
+                                className={`shrink-0 px-4 py-2 rounded font-bold text-sm transition-colors ${
+                                    isInWorkout
+                                    ? 'bg-green-100 text-green-700 hover:bg-green-200 border border-green-200'
+                                    : 'bg-red-600 text-white hover:bg-red-700'
+                                }`}
+                            >
+                                {isInWorkout ? 'Add Again' : 'Add to Workout'}
+                            </button>
                         </div>
 
-                        <button
-                            onClick={() => handleAddToWorkout(exercise)}
-                            className={`shrink-0 px-4 py-2 rounded font-bold text-sm transition-colors ${
-                                isInWorkout
-                                ? 'bg-green-100 text-green-700 hover:bg-green-200 border border-green-200'
-                                : 'bg-red-600 text-white hover:bg-red-700'
-                            }`}
-                        >
-                            {isInWorkout ? 'Add Again' : 'Add to Workout'}
-                        </button>
+                        {isExpanded && (
+                            <div className="mt-4 pt-4 border-t border-gray-100 animate-fade-in">
+                                <h4 className="font-bold text-red-600 mb-2 text-sm uppercase tracking-wide">Jeff's Tips</h4>
+                                <ul className="list-disc list-inside text-sm text-gray-600 space-y-1 pl-2">
+                                    {exercise.tips.map((tip, i) => (
+                                        <li key={i}>{tip}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
                     </div>
                 );
             })}
