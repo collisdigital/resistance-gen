@@ -99,8 +99,6 @@ export const generateWorkout = (options: WorkoutOptions): WorkoutSet[] => {
   let currentStationIndex = 0;
 
   while (exercisesAdded < count) {
-    let pool = availableExercises;
-
     if (groupByStation) {
         // Find a station that has available exercises
         let first = null;
