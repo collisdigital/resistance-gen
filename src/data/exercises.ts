@@ -2,12 +2,15 @@ export type BodyArea = 'Chest' | 'Back' | 'Legs' | 'Shoulders' | 'Arms' | 'Abs' 
 
 export type ExerciseType = 'Push' | 'Pull' | 'Legs' | 'Core' | 'Corrective' | 'Other';
 
+export type Station = 'Free Weights' | 'Cable' | 'Bodyweight' | 'Machine' | 'Other';
+
 export interface Exercise {
   id: string;
   name: string;
   targetMuscle: BodyArea;
   secondaryMuscles?: BodyArea[];
   type: ExerciseType;
+  station: Station;
   description: string;
   tips: string[];
 }
@@ -19,6 +22,7 @@ export const exercises: Exercise[] = [
     name: 'Weighted Dip',
     targetMuscle: 'Chest',
     type: 'Push',
+    station: 'Bodyweight',
     description: 'Perform a dip on parallel bars with added weight via a belt or vest. Lean forward slightly to target the chest.',
     tips: [
       'Lean forward to hit the chest more than triceps.',
@@ -31,6 +35,7 @@ export const exercises: Exercise[] = [
     name: 'Dumbbell Bench Press',
     targetMuscle: 'Chest',
     type: 'Push',
+    station: 'Free Weights',
     description: 'Flat bench press using dumbbells. Allows for greater range of motion and independent arm stabilization.',
     tips: [
       'Bring dumbbells down deep for a stretch.',
@@ -43,6 +48,7 @@ export const exercises: Exercise[] = [
     name: 'Cable Crossover',
     targetMuscle: 'Chest',
     type: 'Push',
+    station: 'Cable',
     description: 'Standing cable fly movement. Great for getting a peak contraction on the chest.',
     tips: [
       'Focus on crossing your hands over each other at the end.',
@@ -55,6 +61,7 @@ export const exercises: Exercise[] = [
     name: 'Incline Dumbbell Press',
     targetMuscle: 'Chest',
     type: 'Push',
+    station: 'Free Weights',
     description: 'Bench press on an incline (approx 30 degrees) to target the upper clavicular head of the pecs.',
     tips: [
       'Low incline (30 degrees) is better than steep (45) to avoid too much front delt.',
@@ -67,6 +74,7 @@ export const exercises: Exercise[] = [
     name: 'Pushup (Standard or Weighted)',
     targetMuscle: 'Chest',
     type: 'Push',
+    station: 'Bodyweight',
     description: 'The classic pushup. Add weight on back if too easy.',
     tips: [
       'Keep core tight (plank position).',
@@ -81,6 +89,7 @@ export const exercises: Exercise[] = [
     name: 'Pullup',
     targetMuscle: 'Back',
     type: 'Pull',
+    station: 'Bodyweight',
     description: 'Overhand grip pullup. The king of back exercises.',
     tips: [
       'Full hang at the bottom.',
@@ -94,6 +103,7 @@ export const exercises: Exercise[] = [
     targetMuscle: 'Back',
     secondaryMuscles: ['Shoulders', 'Corrective'],
     type: 'Pull',
+    station: 'Cable',
     description: 'Cable exercise pulling rope to forehead. targets rear delts, rotator cuff, and traps. A Jeff Cavalier staple.',
     tips: [
       'Lead with the hands, not the elbows.',
@@ -106,6 +116,7 @@ export const exercises: Exercise[] = [
     name: 'Barbell Row',
     targetMuscle: 'Back',
     type: 'Pull',
+    station: 'Free Weights',
     description: 'Bent over row with a barbell. Big compound movement for thickness.',
     tips: [
       'Keep back straight, hinge at hips.',
@@ -118,6 +129,7 @@ export const exercises: Exercise[] = [
     name: 'Lat Pulldown',
     targetMuscle: 'Back',
     type: 'Pull',
+    station: 'Cable',
     description: 'Vertical pulling movement using a cable machine.',
     tips: [
       'Lean back slightly.',
@@ -130,6 +142,7 @@ export const exercises: Exercise[] = [
     name: 'Straight Arm Pushdown',
     targetMuscle: 'Back',
     type: 'Pull',
+    station: 'Cable',
     description: 'Cable isolation exercise for the lats.',
     tips: [
       'Keep arms straight but not locked.',
@@ -144,6 +157,7 @@ export const exercises: Exercise[] = [
     name: 'Barbell Squat',
     targetMuscle: 'Legs',
     type: 'Legs',
+    station: 'Free Weights',
     description: 'High bar or low bar back squat.',
     tips: [
       'Depth is key - break parallel.',
@@ -156,6 +170,7 @@ export const exercises: Exercise[] = [
     name: 'Bulgarian Split Squat',
     targetMuscle: 'Legs',
     type: 'Legs',
+    station: 'Free Weights',
     description: 'Single leg squat with rear foot elevated.',
     tips: [
       'Hate yourself while doing them, thank yourself later.',
@@ -168,6 +183,7 @@ export const exercises: Exercise[] = [
     name: 'Romanian Deadlift (RDL)',
     targetMuscle: 'Legs',
     type: 'Legs',
+    station: 'Free Weights',
     description: 'Hip hinge movement targeting hamstrings and glutes.',
     tips: [
       'Slight bend in knees, movement comes from hips.',
@@ -180,6 +196,7 @@ export const exercises: Exercise[] = [
     name: 'Walking Lunge',
     targetMuscle: 'Legs',
     type: 'Legs',
+    station: 'Free Weights',
     description: 'Dynamic single leg movement.',
     tips: [
       'Take long steps to target glutes/hams, shorter for quads.',
@@ -192,6 +209,7 @@ export const exercises: Exercise[] = [
     name: 'Glute Ham Raise (or Nordic Curl)',
     targetMuscle: 'Legs',
     type: 'Legs',
+    station: 'Bodyweight',
     description: 'Bodyweight hamstring exercise.',
     tips: [
       'Control the descent.',
@@ -206,6 +224,7 @@ export const exercises: Exercise[] = [
     name: 'Overhead Press (Barbell or DB)',
     targetMuscle: 'Shoulders',
     type: 'Push',
+    station: 'Free Weights',
     description: 'Standing overhead press.',
     tips: [
       'Tight core, squeeze glutes.',
@@ -218,6 +237,7 @@ export const exercises: Exercise[] = [
     name: 'Side Lateral Raise',
     targetMuscle: 'Shoulders',
     type: 'Push',
+    station: 'Free Weights',
     description: 'Isolation for side delts.',
     tips: [
       'Pour the pitcher (internal rotation) slightly.',
@@ -230,6 +250,7 @@ export const exercises: Exercise[] = [
     name: 'Rear Delt Fly (Reverse Pec Deck or Bent Over)',
     targetMuscle: 'Shoulders',
     type: 'Pull',
+    station: 'Free Weights',
     description: 'Isolation for rear delts.',
     tips: [
       'Don’t squeeze shoulder blades together too early, focus on the arm movement.',
@@ -241,6 +262,7 @@ export const exercises: Exercise[] = [
     name: 'Arnold Press',
     targetMuscle: 'Shoulders',
     type: 'Push',
+    station: 'Free Weights',
     description: 'Dumbbell press with rotation.',
     tips: [
       'Start palms facing you, end palms facing away.',
@@ -256,6 +278,7 @@ export const exercises: Exercise[] = [
     targetMuscle: 'Arms',
     secondaryMuscles: ['Back'],
     type: 'Pull',
+    station: 'Bodyweight',
     description: 'Underhand grip pullup focusing on biceps.',
     tips: [
       'Supinated grip (palms facing you).',
@@ -268,6 +291,7 @@ export const exercises: Exercise[] = [
     name: 'Skullcrusher / Lying Tricep Extension',
     targetMuscle: 'Arms',
     type: 'Push',
+    station: 'Free Weights',
     description: 'Tricep isolation with EZ bar or dumbbells.',
     tips: [
       'Keep elbows pointed up.',
@@ -280,6 +304,7 @@ export const exercises: Exercise[] = [
     name: 'Spider Curl',
     targetMuscle: 'Arms',
     type: 'Pull',
+    station: 'Free Weights',
     description: 'Bicep curl on an incline bench, chest supported.',
     tips: [
       'Prevents cheating with body momentum.',
@@ -292,6 +317,7 @@ export const exercises: Exercise[] = [
     name: 'Tricep Pushdown (Rope or Bar)',
     targetMuscle: 'Arms',
     type: 'Push',
+    station: 'Cable',
     description: 'Cable pushdown for triceps.',
     tips: [
       'Pin elbows to sides.',
@@ -304,6 +330,7 @@ export const exercises: Exercise[] = [
     name: 'Waiter Curl',
     targetMuscle: 'Arms',
     type: 'Pull',
+    station: 'Free Weights',
     description: 'Single dumbbell held with both hands, wrists bent back.',
     tips: [
       'Great for the long head of the bicep.',
@@ -318,6 +345,7 @@ export const exercises: Exercise[] = [
     name: 'Hanging Leg Raise',
     targetMuscle: 'Abs',
     type: 'Core',
+    station: 'Bodyweight',
     description: 'Hanging from a bar, raising legs to 90 degrees or toes to bar.',
     tips: [
       'Don’t swing.',
@@ -330,6 +358,7 @@ export const exercises: Exercise[] = [
     name: 'Ab Wheel Rollout',
     targetMuscle: 'Abs',
     type: 'Core',
+    station: 'Bodyweight',
     description: 'Rolling out on knees using an ab wheel.',
     tips: [
       'Posterior pelvic tilt (tuck tailbone).',
@@ -342,6 +371,7 @@ export const exercises: Exercise[] = [
     name: 'Cable Crunch',
     targetMuscle: 'Abs',
     type: 'Core',
+    station: 'Cable',
     description: 'Kneeling crunch using cable rope.',
     tips: [
       'Don’t use hips to sit back.',
@@ -354,6 +384,7 @@ export const exercises: Exercise[] = [
     name: 'RKC Plank',
     targetMuscle: 'Abs',
     type: 'Core',
+    station: 'Bodyweight',
     description: 'Standard plank but with high tension.',
     tips: [
       'Squeeze glutes, quads, and fists.',

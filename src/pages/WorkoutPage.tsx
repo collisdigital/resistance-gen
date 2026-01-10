@@ -9,6 +9,7 @@ export default function WorkoutPage() {
     mode, setMode,
     supersetType, setSupersetType,
     count, setCount,
+    groupByStation, setGroupByStation,
     isConfigOpen, setIsConfigOpen,
     workout, generate, clear,
     toggleExerciseCompletion, resetAllExercises,
@@ -134,6 +135,21 @@ export default function WorkoutPage() {
               />
             </div>
 
+            <div className="mb-6">
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="rounded text-red-600 focus:ring-red-500"
+                  checked={groupByStation}
+                  onChange={(e) => setGroupByStation(e.target.checked)}
+                />
+                <span className="text-sm font-medium text-gray-700">Group by Station</span>
+              </label>
+              <p className="text-xs text-gray-500 mt-1 ml-6">
+                Prioritizes completing all exercises at one station before moving to the next.
+              </p>
+            </div>
+
             <button
               onClick={generate}
               className="w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 font-bold transition-colors mb-3"
@@ -220,14 +236,22 @@ export default function WorkoutPage() {
                                     className={`flex-1 cursor-pointer ${exercise.isCompleted ? 'opacity-60' : ''}`}
                                     onClick={() => handleExerciseExpandToggle(exercise.id)}
                                 >
-                                    <div className="flex items-center space-x-2">
-                                        {exercise.isCompleted && (
-                                            <span className="text-green-600 font-bold">✓</span>
-                                        )}
-                                        <h3 className="text-lg font-bold text-gray-900">{exercise.name}</h3>
-                                        <span className="text-xs font-semibold text-white bg-gray-800 px-2 py-1 rounded ml-2">
-                                            {exercise.targetMuscle}
-                                        </span>
+                                    <div className="flex items-start space-x-3 flex-col">
+                                        <div className="flex items-center space-x-2">
+                                            {exercise.isCompleted && (
+                                                <span className="text-green-600 font-bold">✓</span>
+                                            )}
+                                            <h3 className="text-lg font-bold text-gray-900">{exercise.name}</h3>
+                                        </div>
+                                        <div className="flex space-x-2 mt-1">
+                                            <span className="text-xs font-semibold text-white bg-gray-800 px-2 py-1 rounded">
+                                                {exercise.targetMuscle}
+                                            </span>
+                                            {/* Added Station Badge */}
+                                            <span className="text-xs font-semibold text-gray-700 bg-gray-200 px-2 py-1 rounded border border-gray-300">
+                                                {exercise.station}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
 
