@@ -236,18 +236,22 @@ export default function WorkoutPage() {
                                     className={`flex-1 cursor-pointer ${exercise.isCompleted ? 'opacity-60' : ''}`}
                                     onClick={() => handleExerciseExpandToggle(exercise.id)}
                                 >
-                                    <div className="flex items-center space-x-2">
-                                        {exercise.isCompleted && (
-                                            <span className="text-green-600 font-bold">✓</span>
-                                        )}
-                                        <h3 className="text-lg font-bold text-gray-900">{exercise.name}</h3>
-                                        <span className="text-xs font-semibold text-white bg-gray-800 px-2 py-1 rounded ml-2">
-                                            {exercise.targetMuscle}
-                                        </span>
-                                        {/* Added Station Badge */}
-                                        <span className="text-xs font-semibold text-gray-700 bg-gray-200 px-2 py-1 rounded ml-2 border border-gray-300">
-                                            {exercise.station}
-                                        </span>
+                                    <div className="flex items-start space-x-3 flex-col">
+                                        <div className="flex items-center space-x-2">
+                                            {exercise.isCompleted && (
+                                                <span className="text-green-600 font-bold">✓</span>
+                                            )}
+                                            <h3 className="text-lg font-bold text-gray-900">{exercise.name}</h3>
+                                        </div>
+                                        <div className="flex space-x-2 mt-1">
+                                            <span className="text-xs font-semibold text-white bg-gray-800 px-2 py-1 rounded">
+                                                {exercise.targetMuscle}
+                                            </span>
+                                            {/* Added Station Badge */}
+                                            <span className="text-xs font-semibold text-gray-700 bg-gray-200 px-2 py-1 rounded border border-gray-300">
+                                                {exercise.station}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
 

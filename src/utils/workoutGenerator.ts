@@ -82,93 +82,86 @@ export const generateWorkout = (options: WorkoutOptions): WorkoutSet[] => {
      return getRandomExercise(pool);
   };
 
+  // Logic to select the next primary exercise
+  // Returns { exercise: Exercise | null, updatedStationIndex: number }
+  const selectNextExercise = (
+    currentStationIndex: number,
+    stationQueue: Station[]
+  ): { exercise: Exercise | null, nextStationIndex: number } => {
+
+    if (groupByStation) {
+       let index = currentStationIndex;
+       while (index < stationQueue.length) {
+         const currentStation = stationQueue[index];
+         const stationPool = availableExercises.filter(ex => ex.station === currentStation);
+         const candidate = getRandomExercise(stationPool);
+
+         if (candidate) {
+           return { exercise: candidate, nextStationIndex: index };
+         }
+         // Station exhausted
+         index++;
+       }
+       return { exercise: null, nextStationIndex: index };
+    } else {
+      return {
+        exercise: getRandomExercise(availableExercises),
+        nextStationIndex: 0
+      };
+    }
+  };
+
   let exercisesAdded = 0;
 
-  // Logic for Station-Based Generation
-  // We determine a sequence of stations and exhaust them one by one (or as much as needed)
+  // Setup Station Queue
   let stationQueue: Station[] = [];
-
   if (groupByStation) {
-      // Get unique stations from available exercises
       const stations = Array.from(new Set(availableExercises.map(ex => ex.station)));
-      // Shuffle stations
       stationQueue = stations.sort(() => Math.random() - 0.5);
   }
 
-  // Current working pool (defaults to all if not grouped)
   let currentStationIndex = 0;
 
   while (exercisesAdded < count) {
-    if (groupByStation) {
-        // Find a station that has available exercises
-        let first = null;
+    const { exercise: first, nextStationIndex } = selectNextExercise(currentStationIndex, stationQueue);
+    currentStationIndex = nextStationIndex;
 
-        // Try current station, if exhausted move to next
-        while (currentStationIndex < stationQueue.length) {
-            const currentStation = stationQueue[currentStationIndex];
-            const stationPool = availableExercises.filter(ex => ex.station === currentStation);
+    if (!first) break;
 
-            // Try to pick one
-            first = getRandomExercise(stationPool);
+    // Determine if we add a superset or regular set
+    let addedCount = 1;
+    let newSet: WorkoutSet;
 
-            if (first) {
-                // Found one in this station
-                break;
-            } else {
-                // This station is exhausted, move to next
-                currentStationIndex++;
-            }
-        }
+    if (mode === 'Superset' && exercisesAdded + 1 < count) {
+       const second = findPair(first, supersetType || 'Random', !!groupByStation);
 
-        if (!first) break; // All stations exhausted
-
-        // Logic continues with 'first' selected...
-        // But wait, the loop below expects to call getRandomExercise again?
-        // I need to restructure slightly to use the 'first' I just found.
-
-        // Let's inline the rest here for clarity or refactor.
-        // Actually, let's keep the structure: identify 'first', then find 'second'.
-
-        handleSelection(first);
-
+       if (second) {
+         newSet = {
+           id: `set-${Date.now()}-${exercisesAdded}`,
+           exercises: [
+             { ...first, isCompleted: false },
+             { ...second, isCompleted: false }
+           ],
+           type: 'Superset'
+         };
+         addedCount = 2;
+       } else {
+         newSet = {
+           id: `set-${Date.now()}-${exercisesAdded}`,
+           exercises: [{ ...first, isCompleted: false }],
+           type: 'Regular'
+         };
+       }
     } else {
-        // Standard random selection
-        const first = getRandomExercise(availableExercises);
-        if (!first) break;
-        handleSelection(first);
+      newSet = {
+        id: `set-${Date.now()}-${exercisesAdded}`,
+        exercises: [{ ...first, isCompleted: false }],
+        type: 'Regular'
+      };
     }
-  }
 
-  function handleSelection(first: Exercise) {
-      if (mode === 'Superset' && exercisesAdded + 1 < count) {
-         const second = findPair(first, supersetType || 'Random', !!groupByStation);
-
-         if (second) {
-           workout.push({
-             id: `set-${Date.now()}-${exercisesAdded}`,
-             exercises: [
-               { ...first, isCompleted: false },
-               { ...second, isCompleted: false }
-             ],
-             type: 'Superset'
-           });
-           exercisesAdded += 2;
-         } else {
-           workout.push({
-             id: `set-${Date.now()}-${exercisesAdded}`,
-             exercises: [{ ...first, isCompleted: false }],
-             type: 'Regular'
-           });
-           exercisesAdded += 1;
-         }
-      } else {
-        workout.push({
-          id: `set-${Date.now()}-${exercisesAdded}`,
-          exercises: [{ ...first, isCompleted: false }],
-          type: 'Regular'
-        });
-        exercisesAdded += 1;
-      }
+    workout.push(newSet);
+    exercisesAdded += addedCount;
   }
 
   return workout;
