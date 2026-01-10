@@ -16,6 +16,8 @@ interface WorkoutContextType {
   setSupersetType: (type: 'Agonist' | 'Antagonist' | 'Random') => void;
   count: number;
   setCount: (count: number) => void;
+  groupByStation: boolean;
+  setGroupByStation: (group: boolean) => void;
   isConfigOpen: boolean;
   setIsConfigOpen: (isOpen: boolean) => void;
 
@@ -54,6 +56,9 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
   );
   const [count, setCount] = useState<number>(
     initialData.config?.count || 10
+  );
+  const [groupByStation, setGroupByStation] = useState<boolean>(
+    initialData.config?.groupByStation || false
   );
 
   // State for generated workout
@@ -139,7 +144,8 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
       bodyAreas: selectedBodyAreas,
       mode,
       supersetType: mode === 'Superset' ? supersetType : undefined,
-      count
+      count,
+      groupByStation
     };
     const newWorkout = generateWorkout(options);
     setWorkout(newWorkout);
@@ -202,7 +208,8 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
                  bodyAreas: selectedBodyAreas.length > 0 ? selectedBodyAreas : [exercise.targetMuscle],
                  mode: mode,
                  supersetType: supersetType,
-                 count: count
+                 count: count,
+                 groupByStation: groupByStation
              });
           }
       } else {
@@ -227,6 +234,7 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
       mode, setMode,
       supersetType, setSupersetType,
       count, setCount,
+      groupByStation, setGroupByStation,
       isConfigOpen, setIsConfigOpen,
       workout, generate, clear,
       toggleExerciseCompletion, resetAllExercises,

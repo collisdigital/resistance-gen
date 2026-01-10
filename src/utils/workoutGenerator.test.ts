@@ -114,4 +114,56 @@ describe('generateWorkout', () => {
     const workout = generateWorkout(options);
     expect(workout.length).toBe(0);
   });
+
+  it('should respect groupByStation logic', () => {
+      const options: WorkoutOptions = {
+        bodyAreas: ['Chest', 'Back'],
+        mode: 'Regular',
+        count: 6,
+        groupByStation: true
+      };
+
+      const workout = generateWorkout(options);
+
+      // Collect stations in order
+      const stations = workout.flatMap(set => set.exercises.map(ex => ex.station));
+
+      // Check if stations are grouped (i.e., minimal switching)
+      let switches = 0;
+      for (let i = 1; i < stations.length; i++) {
+          if (stations[i] !== stations[i - 1]) {
+              switches++;
+          }
+      }
+
+      // With 6 exercises and maybe 2-3 stations, we expect very few switches.
+      // If random, switches would be higher.
+      // E.g. A A B B C C -> 2 switches.
+      // E.g. A B A B A B -> 5 switches.
+
+      // Given the logic exhausts a station before moving, switches should be roughly (NumStations - 1).
+      // Available stations for Chest/Back are Free Weights, Cable, Bodyweight (3 stations).
+      // So max switches should be 2 (unless a station is revisited which shouldn't happen with current logic).
+
+      expect(switches).toBeLessThanOrEqual(3);
+  });
+
+  it('should respect groupByStation in supersets (strict matching)', () => {
+      const options: WorkoutOptions = {
+          bodyAreas: ['Chest', 'Back', 'Legs', 'Shoulders', 'Arms'], // Use all to get variety
+          mode: 'Superset',
+          count: 10,
+          groupByStation: true,
+          supersetType: 'Random'
+      };
+
+      const workout = generateWorkout(options);
+
+      workout.forEach(set => {
+          if (set.type === 'Superset') {
+              const [ex1, ex2] = set.exercises;
+              expect(ex1.station).toBe(ex2.station);
+          }
+      });
+  });
 });
